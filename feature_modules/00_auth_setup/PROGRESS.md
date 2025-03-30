@@ -11,7 +11,7 @@
 -   [x] Task 1.3: Configure Supabase Environment Variables.
 -   [x] Task 1.4: Create Supabase Client Helper.
 -   [x] Task 1.5: Apply Database Schema & RLS.
--   [ ] Task 1.6: Configure Supabase Auth Providers.
+-   [x] Task 1.6: Configure Supabase Auth Providers.
 
 ## Phase 2: Authentication UI & Logic
 

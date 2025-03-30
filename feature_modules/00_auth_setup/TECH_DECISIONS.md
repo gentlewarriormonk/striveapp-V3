@@ -19,13 +19,15 @@ Deployment: Vercel.
 2. Key Libraries/Services Introduced or Heavily Used
 @supabase/supabase-js: The core JavaScript library for interacting with Supabase (DB, Auth, etc.).
 
-@supabase/auth-helpers-nextjs: Provides convenience functions and hooks specifically for integrating Supabase Auth with Next.js (App Router), managing sessions, and protecting routes.
+@supabase/ssr: The primary package for server-side auth integration with Next.js (App Router), managing sessions (via cookies), and protecting routes using middleware and server clients. Replaces the previous `@supabase/auth-helpers-nextjs`.
 
-@supabase/auth-ui-react: (Optional but Recommended) Pre-built React components for login/signup forms that integrate easily with Supabase Auth. Can be customized with Tailwind CSS. Using this can significantly speed up UI development for auth. If not used, forms will be built manually using shadcn/ui. Decision: Use @supabase/auth-ui-react initially for speed, customized to match the Strive theme.
+@supabase/auth-ui-react: (Removed) Pre-built React components for login/signup forms. Decision: Due to migration to `@supabase/ssr` and desire for full control over the UI/UX, we will build auth forms manually using `shadcn/ui` components, `react-hook-form` for state management, and `zod` for validation.
 
-zod: (Recommended) For form validation if building forms manually or adding extra validation.
+zod: (Required) For robust form validation for manually built auth forms.
 
-react-hook-form: (Recommended) If building forms manually for better state management and validation integration.
+react-hook-form: (Required) For managing form state, validation, and submission logic for manually built auth forms.
+
+shadcn/ui: (Required) UI component library used to build the auth forms and other UI elements.
 
 3. Database Schema Changes/Additions
 3.1 profiles Table
@@ -117,17 +119,17 @@ JWT Expiry: Review default settings (e.g., 1 hour access token, 7 days refresh t
 Redirect URLs: Configure allowed URLs for redirection after login/signup/OAuth callbacks in Supabase Auth settings (include localhost for development and production URL).
 
 5. Key Implementation Notes/Rationale
-Session Management: Rely heavily on @supabase/auth-helpers-nextjs to manage user sessions via server-side cookies. This includes creating the Supabase client instance for both server components/actions and client components.
+Session Management: Rely heavily on @supabase/ssr utilities to manage user sessions via server-side cookies. This involves creating Supabase client instances correctly for Server Components, Server Actions, Client Components, and Route Handlers/Middleware using functions provided by `@supabase/ssr`.
 
-Protected Routes: Use Next.js Middleware or wrap layouts/pages with logic provided by @supabase/auth-helpers-nextjs (e.g., checking session state) to redirect unauthenticated users.
+Protected Routes: Use Next.js Middleware combined with helpers from @supabase/ssr (like `createServerClient`) to check session state and manage redirects for unauthenticated users trying to access protected paths.
 
-UI Implementation: Use @supabase/auth-ui-react components (<Auth />) configured with Supabase client and desired providers (Email, Google). Apply Tailwind CSS theme overrides to match the Strive aesthetic. Place these components on dedicated /login and /signup pages.
+UI Implementation: Build authentication forms (login, signup) manually using shadcn/ui components (e.g., Input, Button, Label). Use react-hook-form for form state management and zod for validation. Do not use `@supabase/auth-ui-react` or `ThemeSupa`. Place these custom forms on dedicated /login and /signup pages.
 
-Profile Data Access: After login, fetch the user's profile data from the profiles table using the session user's ID via the Supabase client library.
+Profile Data Access: After login, fetch the user's profile data from the profiles table using the session user's ID via a Supabase client instance created with `@supabase/ssr` helpers.
 
-Environment Variables: Supabase URL and Anon Key must be stored securely in environment variables (.env.local for Next.js), prefixed with NEXT_PUBLIC_ for client-side access as required by the Supabase client library. Ensure .env.local is added to .gitignore.
+Environment Variables: Supabase URL and Anon Key must be stored securely in environment variables (.env.local for Next.js). Keys needed client-side require the `NEXT_PUBLIC_` prefix (only the Anon key typically). The Service Role Key (if used for server-side admin tasks, although `@supabase/ssr` primarily uses the Anon key with cookie-based auth) should *not* have the public prefix. Ensure .env.local is added to .gitignore.
 
 6. API Endpoints Created/Modified
-No custom backend API endpoints are expected for this module if relying solely on the Supabase client library for Auth and DB interactions.
+No custom backend API endpoints are expected for basic auth functionality if relying solely on the Supabase client library and `@supabase/ssr`.
 
-Next.js will require specific routes to handle the OAuth callback (e.g., /auth/callback), typically handled by @supabase/auth-helpers-nextjs.
+Next.js will require specific routes to handle the OAuth callback (e.g., /auth/callback), which will be implemented using Route Handlers and helpers from @supabase/ssr to exchange the code for a session.

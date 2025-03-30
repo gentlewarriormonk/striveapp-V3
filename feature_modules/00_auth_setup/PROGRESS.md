@@ -16,8 +16,8 @@
 ## Phase 2: Authentication UI & Logic
 
 -   [x] Task 2.1: Create Authentication Layout/Wrapper (Optional but Recommended).
--   [ ] Task 2.2: Create Log In Page.
--   [ ] Task 2.3: Create Sign Up Page.
+-   [x] Task 2.2: Create Log In Page.
+-   [x] Task 2.3: Create Sign Up Page.
 -   [ ] Task 2.4: Implement Auth Callback Route.
 -   [ ] Task 2.5: Implement Log Out Functionality.
 

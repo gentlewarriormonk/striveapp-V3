@@ -46,3 +46,14 @@
 -   [ ] Task 5.2: Update module `README.md` with setup notes if necessary (e.g., environment variable setup).
 -   [ ] Task 5.3: Code review using AI Agent (Prompt Agent: "Critique the authentication setup in `middleware.ts`, auth helper files, and auth pages.").
 -   [ ] Task 5.4: Final commit & push. Mark module `00_auth_setup` as 'In Progress' or 'Testing' in `PROJECT_PLAN.md`. Update this module's `PROGRESS.md`.
+
+---
+
+## 🧹 Polish Items (Module 00)
+
+*   [ ] Adjust logo size on Login page (and Sign Up page later) if needed.
+*   [ ] Add Google icon to the "Log In with Google" button (and Sign Up later).
+*   [ ] Ensure Dark Mode is the default theme (likely involves root layout changes).
+*   [ ] Refactor Sign Up/Login links (`<a>` tags) on auth pages to use Next.js `<Link>` component for optimized client-side navigation.
+
+---

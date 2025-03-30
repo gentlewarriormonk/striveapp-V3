@@ -7,8 +7,8 @@
 ## Phase 1: Project Initialization & Supabase Setup
 
 -   [x] Task 1.1: Initialize Next.js Project.
--   [ ] Task 1.2: Install Core Dependencies.
--   [ ] Task 1.3: Configure Supabase Environment Variables.
+-   [x] Task 1.2: Install Core Dependencies.
+-   [x] Task 1.3: Configure Supabase Environment Variables.
 -   [ ] Task 1.4: Create Supabase Client Helper.
 -   [ ] Task 1.5: Apply Database Schema & RLS.
 -   [ ] Task 1.6: Configure Supabase Auth Providers.

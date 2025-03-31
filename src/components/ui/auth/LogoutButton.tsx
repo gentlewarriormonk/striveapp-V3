@@ -1,13 +1,15 @@
-// src/components/auth/LogoutButton.tsx
-'use client'; // This component needs to be a client component
+// src/components/ui/auth/LogoutButton.tsx (Modified handleLogout)
+'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button'; // Use Shadcn button
-import { createClient } from '@/lib/supabase/client'; // Use client-side Supabase client
+// useRouter is no longer strictly needed if using window.location
+// import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner'; // Import toast if you want error messages
 
 export default function LogoutButton() {
-    const router = useRouter();
+    // const router = useRouter(); // We might not need this anymore
     const supabase = createClient();
     const [isLoading, setIsLoading] = React.useState(false);
 
@@ -19,23 +21,20 @@ export default function LogoutButton() {
 
         if (error) {
             console.error('Error logging out:', error.message);
-            // Optionally show an error toast message here
-            // import { toast } from 'sonner';
-            // toast.error(`Logout failed: ${error.message}`);
+            toast.error(`Logout failed: ${error.message}`); // Show error toast
             setIsLoading(false);
         } else {
-            console.log('Logout successful, redirecting to login.');
-            // Redirect to login page after successful logout
-            router.push('/login');
-            // router.refresh(); // Optional: Force refresh server components
+            console.log('Logout successful, redirecting to login via full reload.');
+            // Redirect using a full page reload instead of router.push
+            window.location.assign('/login');
+            // No need to reset isLoading state as the page is navigating away
         }
-        // No need to setIsLoading(false) on success as we are navigating away
     };
 
     return (
         <Button
-            variant="outline" // Or choose another variant
-            size="sm" // Make it small
+            variant="outline"
+            size="sm"
             onClick={handleLogout}
             disabled={isLoading}
         >

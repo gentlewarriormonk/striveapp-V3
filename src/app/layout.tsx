@@ -1,12 +1,13 @@
-// src/app/layout.tsx (Corrected Cookie Handling for Supabase Client)
+// src/app/layout.tsx (Relying on Middleware for Session State)
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 
-import { cookies } from 'next/headers'; // Import cookies function
-import { createServerClient, type CookieOptions } from '@supabase/ssr'; // Import Supabase server client and types
+import { cookies } from 'next/headers';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import Image from 'next/image';
 
-import LogoutButton from '@/components/ui/auth/LogoutButton'; // Ensure path is correct
+import LogoutButton from '@/components/ui/auth/LogoutButton';
 
 export const metadata: Metadata = {
     title: 'Strive App',
@@ -18,71 +19,63 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const cookieStore = cookies(); // We still need this for direct access later if needed, but not passed directly to client config below
+    console.log('\n--- RootLayout Start (Relying on Middleware) ---');
+    const cookieStore = cookies();
 
+    // Create client - primarily needed if other parts of layout fetch Supabase data
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
-            // *** CORRECTED COOKIE CONFIG ***
-            // Pass the getter/setter functions directly using the imported cookies()
             cookies: {
                 get(name: string) {
+                    // Still might trigger await error, but let's see
                     return cookieStore.get(name)?.value;
                 },
-                set(name: string, value: string, options: CookieOptions) {
-                    // Server Components cannot set cookies. This function needs to be passed
-                    // but might not be called in this read-only context. If called, it would
-                    // ideally throw an error or be handled in Middleware/Actions.
-                    try {
-                        cookieStore.set({ name, value, ...options });
-                    } catch (error) {
-                        // Log error perhaps
-                        console.warn('Warning: Server Component tried to set cookie (set)', { name });
-                    }
-                },
-                remove(name: string, options: CookieOptions) {
-                     // Server Components cannot delete cookies.
-                    try {
-                        cookieStore.set({ name, value: '', ...options }); // Attempt to clear cookie
-                    } catch (error) {
-                        console.warn('Warning: Server Component tried to set cookie (remove)', { name });
-                    }
-                },
+                 // Add set/remove stubs in case getUser internally needs them,
+                 // even if server components shouldn't call them directly.
+                set(name: string, value: string, options: CookieOptions) { },
+                remove(name: string, options: CookieOptions) { },
             },
-             // *** END CORRECTED COOKIE CONFIG ***
         }
     );
 
-    // --- Fetch user session server-side SAFELY ---
-    let user = null;
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    // Fetch user session data - expecting middleware to have handled refresh/expiry
+    console.log('Layout (Relying on Middleware): Calling supabase.auth.getUser()...');
+    const { data: { user } } = await supabase.auth.getUser(); // Keep the direct destructure for now
 
-    if (userError) {
-        console.error('RootLayout: Error fetching user:', userError.message);
-    } else if (userData?.user) {
-        user = userData.user;
-        console.log('RootLayout: User session checked server-side. User:', user.email);
-    } else {
-         console.log('RootLayout: User session checked server-side. User: Not logged in');
-    }
-    // --- End Safe Fetch ---
+     if (user) {
+         console.log('Layout (Relying on Middleware): User FOUND. User:', user.email);
+     } else {
+          console.log('Layout (Relying on Middleware): User NOT FOUND.');
+     }
+     console.log('--- RootLayout End (Relying on Middleware) ---');
+
 
     return (
-        <html lang="en" className={GeistSans.className}>
-            <body className="bg-background text-foreground dark">
-                <header className="sticky top-0 z-40 w-full border-b bg-background">
-                    <div className="container flex h-16 items-center justify-between space-x-4 sm:space-x-0">
-                        <div className="font-bold">Strive</div> {/* Header text */}
-                        <div className="flex items-center space-x-4">
-                            {user ? <LogoutButton /> : null}
-                        </div>
-                    </div>
-                </header>
-                <main className="container mt-4 flex-grow">
-                    {children}
-                </main>
-            </body>
-        </html>
-    );
+         <html lang="en" className={GeistSans.className}>
+             <body className="bg-background text-foreground dark">
+                 <header className="sticky top-0 z-40 w-full border-b bg-background">
+                     <div className="container flex h-16 items-center justify-between space-x-4 sm:space-x-0">
+                          <div className="flex items-center">
+                              <Image
+                                  src="/strive-logo-white-on-transparent.png"
+                                  alt="Strive Logo"
+                                  width={100}
+                                  height={25}
+                                  priority
+                              />
+                          </div>
+                         <div className="flex items-center space-x-4">
+                             {/* The conditional render based on the fetched user */}
+                             {user ? <LogoutButton /> : null}
+                         </div>
+                     </div>
+                 </header>
+                 <main className="container mt-4 flex-grow">
+                     {children}
+                 </main>
+             </body>
+         </html>
+     );
 }

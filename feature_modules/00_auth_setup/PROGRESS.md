@@ -55,5 +55,5 @@
 *   [ ] Add Google icon to the "Log In with Google" button (and Sign Up later).
 *   [ ] Ensure Dark Mode is the default theme (likely involves root layout changes).
 *   [ ] Refactor Sign Up/Login links (`<a>` tags) on auth pages to use Next.js `<Link>` component for optimized client-side navigation.
-
+*   [ ] Investigate/resolve noisy "cookies() should be awaited" console errors in `layout.tsx` (possibly related to Next.js/Supabase SSR interaction).
 ---
